@@ -9,5 +9,5 @@ export type InngestEvents = {
 };
 
 export const inngest = new Inngest({
-	id: "ai-pitch-deck-build",
+	id: "deckly-build",
 });
