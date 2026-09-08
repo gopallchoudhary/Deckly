@@ -12,6 +12,22 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String?  @unique
+  firstName String?
+  lastName  String?
+  name      String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  decks Deck[]
+
+  @@map("users")
+}
+
 enum DeckStatus {
   PENDING
   GENERATING
@@ -21,12 +37,14 @@ enum DeckStatus {
 
 model Deck {
   id           String     @id @default(cuid())
+  userId       String
   idea         String     @db.Text
   title        String?
   status       DeckStatus @default(PENDING)
   errorMessage String?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+  user         User @relation(fields: [userId], references: [id])
   slides       Slide[]
 }
 
