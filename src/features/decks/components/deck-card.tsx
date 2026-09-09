@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
 import {
@@ -72,6 +73,22 @@ export function DeckCard({ deck }: { deck: DeckSummary }) {
 
 	return (
 		<div className="group relative overflow-hidden rounded-lg border bg-background transition-colors hover:border-foreground/25">
+			{deck.coverImageUrl && (
+				<div
+					className="pointer-events-none absolute inset-0 z-0 select-none"
+					aria-hidden
+				>
+					<Image
+						src={deck.coverImageUrl}
+						alt=""
+						fill
+						sizes="(max-width: 768px) 100vw, 340px"
+						className="scale-110 object-cover blur-2xl"
+					/>
+					<div className="absolute inset-0 bg-background/60" />
+				</div>
+			)}
+
 			{!isEditing && (
 				<Link
 					href={`/deck/${deck.id}`}

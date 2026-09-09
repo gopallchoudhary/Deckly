@@ -12,10 +12,11 @@ export type DeckSummary = {
 	status: "PENDING" | "GENERATING" | "COMPLETE" | "FAILED";
 	errorMessage: string | null;
 	slideCount: number;
+	coverImageUrl: string | null;
 	createdAt: string;
 };
 
-export type DeckDetail = Omit<DeckSummary, "slideCount"> & {
+export type DeckDetail = Omit<DeckSummary, "slideCount" | "coverImageUrl"> & {
 	idea: string;
 	slides: {
 		id: string;
@@ -103,6 +104,11 @@ export async function listDecks(): Promise<DeckSummary[]> {
 			errorMessage: true,
 			createdAt: true,
 			_count: { select: { slides: true } },
+			slides: {
+				orderBy: { order: "asc" },
+				take: 1,
+				select: { imageUrl: true },
+			},
 		},
 	});
 
@@ -112,6 +118,7 @@ export async function listDecks(): Promise<DeckSummary[]> {
 		status: deck.status,
 		errorMessage: deck.errorMessage,
 		slideCount: deck._count.slides,
+		coverImageUrl: deck.slides[0]?.imageUrl ?? null,
 		createdAt: deck.createdAt.toISOString(),
 	}));
 }
