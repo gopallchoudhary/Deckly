@@ -79,12 +79,13 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 							<Carousel
 								setApi={setApi}
 								opts={{ loop: false, align: "start" }}
-								className="min-w-0"
+								className="w-full min-w-0"
 							>
-								<CarouselContent>
-									{slides.map((slide) => (
-										<CarouselItem key={slide.id}>
-											<div className="mx-auto w-full max-w-[calc((100dvh-480px)*16/9)]">
+								<div className="mx-auto flex w-full items-center justify-center gap-3 md:max-w-[calc((100dvh-480px)*16/9+88px)]">
+									<CarouselPrevious className="static left-auto shrink-0 bg-background/80 backdrop-blur" />
+									<CarouselContent className="min-w-0 flex-1">
+										{slides.map((slide) => (
+											<CarouselItem key={slide.id}>
 												<SlideView
 													slide={slide}
 													onEdit={
@@ -102,12 +103,11 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 														/>
 													) : undefined}
 												</SlideView>
-											</div>
-										</CarouselItem>
-									))}
-								</CarouselContent>
-								<CarouselPrevious className="left-2 bg-background/80 backdrop-blur" />
-								<CarouselNext className="right-2 bg-background/80 backdrop-blur" />
+											</CarouselItem>
+										))}
+									</CarouselContent>
+									<CarouselNext className="static right-auto shrink-0 bg-background/80 backdrop-blur" />
+								</div>
 								<CarouselDots className="mt-4 md:hidden" />
 							</Carousel>
 						</div>
