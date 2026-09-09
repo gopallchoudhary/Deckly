@@ -12,7 +12,7 @@
 
 # Graphify
 graphify-out/
-.graphifyignore
+/.graphifyignore
 # testing
 /coverage
 
