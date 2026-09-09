@@ -48,8 +48,8 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 
 	return (
 		<>
-			<div className="rounded-4xl border bg-muted p-4 sm:p-6">
-				<div className="flex min-h-[420px] gap-4">
+			<div className="flex min-h-0 flex-1 flex-col rounded-4xl border bg-muted p-4 sm:p-6">
+				<div className="flex min-h-0 flex-1 gap-4">
 					<SlideRail
 						slides={slides}
 						selected={selected}
@@ -59,8 +59,8 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 					/>
 					<div className="hidden w-px shrink-0 bg-border md:block" aria-hidden />
 
-					<div className="flex min-w-0 flex-1 flex-col">
-						<div className="mb-4 flex items-center justify-between gap-3">
+					<div className="flex min-h-0 min-w-0 flex-1 flex-col">
+						<div className="mb-4 flex shrink-0 items-center justify-between gap-3">
 							<span className="font-mono text-xs text-muted-foreground">
 								{String(selected + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
 							</span>
@@ -75,38 +75,42 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 							</Button>
 						</div>
 
-						<Carousel
-							setApi={setApi}
-							opts={{ loop: false, align: "start" }}
-							className="min-w-0 flex-1"
-						>
-							<CarouselContent>
-								{slides.map((slide) => (
-									<CarouselItem key={slide.id}>
-										<SlideView
-											slide={slide}
-											onEdit={
-												editingId === null ? () => startEdit(slide.id) : undefined
-											}
-										>
-											{editingId === slide.id ? (
-												<SlideEditor
+						<div className="min-h-0 flex-1 overflow-y-auto">
+							<Carousel
+								setApi={setApi}
+								opts={{ loop: false, align: "start" }}
+								className="min-w-0"
+							>
+								<CarouselContent>
+									{slides.map((slide) => (
+										<CarouselItem key={slide.id}>
+											<div className="mx-auto w-full max-w-[calc((100dvh-480px)*16/9)]">
+												<SlideView
 													slide={slide}
-													saving={updateSlide.isPending}
-													onSave={(title, content) =>
-														saveEdit(slide.id, title, content)
+													onEdit={
+														editingId === null ? () => startEdit(slide.id) : undefined
 													}
-													onCancel={() => setEditingId(null)}
-												/>
-											) : undefined}
-										</SlideView>
-									</CarouselItem>
-								))}
-							</CarouselContent>
-							<CarouselPrevious className="left-2 bg-background/80 backdrop-blur" />
-							<CarouselNext className="right-2 bg-background/80 backdrop-blur" />
-							<CarouselDots className="mt-4 md:hidden" />
-						</Carousel>
+												>
+													{editingId === slide.id ? (
+														<SlideEditor
+															slide={slide}
+															saving={updateSlide.isPending}
+															onSave={(title, content) =>
+																saveEdit(slide.id, title, content)
+															}
+															onCancel={() => setEditingId(null)}
+														/>
+													) : undefined}
+												</SlideView>
+											</div>
+										</CarouselItem>
+									))}
+								</CarouselContent>
+								<CarouselPrevious className="left-2 bg-background/80 backdrop-blur" />
+								<CarouselNext className="right-2 bg-background/80 backdrop-blur" />
+								<CarouselDots className="mt-4 md:hidden" />
+							</Carousel>
+						</div>
 					</div>
 				</div>
 			</div>

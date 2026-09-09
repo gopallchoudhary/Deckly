@@ -13,7 +13,7 @@ export default async function DeckPage({
 	if (!deck) notFound();
 
 	return (
-		<div className="mx-auto max-w-[1600px]">
+		<div className="mx-auto h-full max-w-[1600px]">
 			<DeckViewer initial={deck} />
 		</div>
 	);
