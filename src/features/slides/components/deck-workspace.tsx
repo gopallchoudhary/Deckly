@@ -30,9 +30,42 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 	const { selected, count } = useEmblaSelection(api, () => setEditingId(null));
 	const slides = deck.slides;
 
-	function goTo(index: number) {
-		api?.scrollTo(index);
-	}
+	const goTo = React.useCallback(
+		(index: number) => {
+			api?.scrollTo(index);
+		},
+		[api],
+	);
+
+	React.useEffect(() => {
+		if (isFullscreen) return;
+
+		function handleKeyDown(event: KeyboardEvent) {
+			const target = event.target as HTMLElement | null;
+			if (
+				target &&
+				(target.tagName === "INPUT" ||
+					target.tagName === "TEXTAREA" ||
+					target.isContentEditable)
+			) {
+				return;
+			}
+			if (target?.closest("[data-slot=carousel], [role=menu], [role=dialog]")) {
+				return;
+			}
+
+			if (event.key === "ArrowRight") {
+				event.preventDefault();
+				goTo(Math.min(selected + 1, count - 1));
+			} else if (event.key === "ArrowLeft") {
+				event.preventDefault();
+				goTo(Math.max(selected - 1, 0));
+			}
+		}
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [selected, count, goTo, isFullscreen]);
 
 	function startEdit(slideId: string) {
 		if (slides[selected]?.id !== slideId) goTo(slides.findIndex((s) => s.id === slideId));
