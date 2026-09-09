@@ -5,6 +5,13 @@ import Image from "next/image";
 import { PencilIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Kbd } from "@/components/ui/kbd";
 
 export type SlideItem = {
 	id: string;
@@ -80,15 +87,26 @@ export function SlideView({
 							</ul>
 						</div>
 						{onEdit && (
-							<Button
-								variant="ghost"
-								size="icon-sm"
-								onClick={onEdit}
-								aria-label="Edit slide"
-								className="shrink-0 rounded-full"
-							>
-								<PencilIcon aria-hidden />
-							</Button>
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger
+										render={
+											<Button
+												variant="ghost"
+												size="icon-sm"
+												onClick={onEdit}
+												aria-label="Edit slide"
+												className="shrink-0 rounded-full"
+											/>
+										}
+									>
+										<PencilIcon aria-hidden />
+									</TooltipTrigger>
+									<TooltipContent>
+										Press <Kbd>E</Kbd> to edit
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 						)}
 					</div>
 				)}

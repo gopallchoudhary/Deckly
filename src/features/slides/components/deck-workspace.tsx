@@ -4,6 +4,13 @@ import * as React from "react";
 import { Maximize2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Kbd } from "@/components/ui/kbd";
+import {
 	Carousel,
 	CarouselContent,
 	CarouselItem,
@@ -41,6 +48,7 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 		if (isFullscreen) return;
 
 		function handleKeyDown(event: KeyboardEvent) {
+			const key = event.key.toLowerCase();
 			const target = event.target as HTMLElement | null;
 			if (
 				target &&
@@ -50,22 +58,36 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 			) {
 				return;
 			}
-			if (target?.closest("[data-slot=carousel], [role=menu], [role=dialog]")) {
+			if (target?.closest("[role=menu], [role=dialog]")) {
+				return;
+			}
+			if (event.metaKey || event.ctrlKey || event.altKey) {
 				return;
 			}
 
-			if (event.key === "ArrowRight") {
+			if (key === "arrowright" || key === "arrowleft") {
+				if (target?.closest("[data-slot=carousel]")) return;
 				event.preventDefault();
-				goTo(Math.min(selected + 1, count - 1));
-			} else if (event.key === "ArrowLeft") {
+				goTo(
+					key === "arrowright"
+						? Math.min(selected + 1, count - 1)
+						: Math.max(selected - 1, 0),
+				);
+			} else if (key === "p") {
 				event.preventDefault();
-				goTo(Math.max(selected - 1, 0));
+				setIsFullscreen(true);
+			} else if (key === "e") {
+				if (editingId !== null) return;
+				const slide = slides[selected];
+				if (!slide) return;
+				event.preventDefault();
+				startEdit(slide.id);
 			}
 		}
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [selected, count, goTo, isFullscreen]);
+	}, [selected, count, goTo, isFullscreen, editingId, slides, startEdit]);
 
 	function startEdit(slideId: string) {
 		if (slides[selected]?.id !== slideId) goTo(slides.findIndex((s) => s.id === slideId));
@@ -97,15 +119,26 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 							<span className="font-mono text-xs text-muted-foreground">
 								{String(selected + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
 							</span>
-							<Button
-								variant="outline"
-								size="sm"
-								className="rounded-full"
-								onClick={() => setIsFullscreen(true)}
-							>
-								<Maximize2Icon aria-hidden />
-								Present
-							</Button>
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger
+										render={
+											<Button
+												variant="outline"
+												size="sm"
+												className="rounded-full"
+												onClick={() => setIsFullscreen(true)}
+											/>
+										}
+									>
+										<Maximize2Icon aria-hidden />
+										Present
+									</TooltipTrigger>
+									<TooltipContent>
+										Press <Kbd>P</Kbd> to present
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 						</div>
 
 						<div className="min-h-0 flex-1 overflow-y-auto">
