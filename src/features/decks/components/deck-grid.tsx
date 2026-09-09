@@ -9,7 +9,7 @@ export function DeckGrid({ decks }: { decks: DeckSummary[] | undefined }) {
 		return (
 			<div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
 				{Array.from({ length: 4 }).map((_, index) => (
-					<Skeleton key={index} className="aspect-[4/3] rounded-lg" />
+					<Skeleton key={index} className="aspect-[4/3] rounded-lg bg-background" />
 				))}
 			</div>
 		);

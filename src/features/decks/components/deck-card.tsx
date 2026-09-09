@@ -71,7 +71,7 @@ export function DeckCard({ deck }: { deck: DeckSummary }) {
 	}
 
 	return (
-		<div className="group relative overflow-hidden rounded-lg border bg-card transition-colors hover:border-foreground/25">
+		<div className="group relative overflow-hidden rounded-lg border bg-background transition-colors hover:border-foreground/25">
 			{!isEditing && (
 				<Link
 					href={`/deck/${deck.id}`}
@@ -109,7 +109,26 @@ export function DeckCard({ deck }: { deck: DeckSummary }) {
 				)}
 
 				<div className="mt-auto space-y-2 pt-6">
-					<DeckStatusChip status={deck.status} />
+					<div className="flex items-center justify-between gap-2">
+						<DeckStatusChip status={deck.status} />
+						{isFailed && (
+							<Button
+								size="xs"
+								variant="outline"
+								disabled={retryDeck.isPending}
+								onClick={(event) => {
+									event.preventDefault();
+									retryDeck.mutate(deck.id);
+								}}
+								className="pointer-events-auto shrink-0 rounded-full"
+							>
+								{retryDeck.isPending ? (
+									<Loader2Icon className="animate-spin" aria-hidden />
+								) : null}
+								Retry
+							</Button>
+						)}
+					</div>
 					<p className="font-mono text-xs text-muted-foreground">
 						{deck.slideCount} {deck.slideCount === 1 ? "slide" : "slides"} ·{" "}
 						{format(new Date(deck.createdAt), "MMM d, yyyy")}
@@ -140,24 +159,6 @@ export function DeckCard({ deck }: { deck: DeckSummary }) {
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
-
-			{isFailed && (
-				<Button
-					size="xs"
-					variant="outline"
-					disabled={retryDeck.isPending}
-					onClick={(event) => {
-						event.preventDefault();
-						retryDeck.mutate(deck.id);
-					}}
-					className="pointer-events-auto absolute right-3 bottom-3 z-10 rounded-full"
-				>
-					{retryDeck.isPending ? (
-						<Loader2Icon className="animate-spin" aria-hidden />
-					) : null}
-					Retry
-				</Button>
-			)}
 
 			<AlertDialog
 				open={isConfirmingDelete}

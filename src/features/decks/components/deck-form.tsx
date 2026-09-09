@@ -40,7 +40,7 @@ export function DeckForm() {
 				}}
 				placeholder="Describe your project idea…"
 				aria-label="Project idea"
-				className="min-h-32 rounded-2xl border-input px-4 py-3 text-base focus-visible:border-brand focus-visible:ring-brand/20 md:text-base"
+				className="min-h-32 rounded-2xl border-input bg-background px-4 py-3 text-base focus-visible:border-brand focus-visible:ring-brand/20 dark:bg-background md:text-base"
 			/>
 			<div className="flex items-center justify-between gap-4">
 				<p
