@@ -4,5 +4,9 @@ import { DashboardView } from "@/features/decks/components/dashboard-view";
 export default async function DashboardPage() {
 	await onBoardUser();
 
-	return <DashboardView />;
+	return (
+		<div className="mx-auto max-w-6xl">
+			<DashboardView />
+		</div>
+	);
 }

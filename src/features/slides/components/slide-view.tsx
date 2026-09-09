@@ -57,9 +57,9 @@ export function SlideView({
 			</div>
 			<div className="p-6">
 				{isEditing ? (
-					children
+					<div className="max-w-3xl">{children}</div>
 				) : (
-					<div className="flex items-start justify-between gap-3">
+					<div className="flex max-w-3xl items-start justify-between gap-3">
 						<div className="min-w-0">
 							<h3 className="text-xl font-semibold tracking-tight">
 								{slide.title}
