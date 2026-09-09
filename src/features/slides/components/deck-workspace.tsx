@@ -1,8 +1,21 @@
 "use client";
 
 import * as React from "react";
-import { Maximize2Icon } from "lucide-react";
+import {
+	FileDownIcon,
+	FileTextIcon,
+	Loader2Icon,
+	Maximize2Icon,
+	PresentationIcon,
+} from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
 	Tooltip,
 	TooltipContent,
@@ -32,7 +45,42 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 	const [collapsed, setCollapsed] = React.useState(false);
 	const [editingId, setEditingId] = React.useState<string | null>(null);
 	const [isFullscreen, setIsFullscreen] = React.useState(false);
+	const [isExporting, setIsExporting] = React.useState(false);
 	const updateSlide = useUpdateSlide();
+
+	async function exportDeck(format: "pptx" | "pdf") {
+		setIsExporting(true);
+		try {
+			const response = await fetch(
+				`/api/decks/${deck.id}/export?format=${format}`,
+			);
+			if (!response.ok) {
+				const body = (await response.json().catch(() => null)) as {
+					error?: string;
+				} | null;
+				throw new Error(body?.error ?? "Export failed.");
+			}
+
+			const blob = await response.blob();
+			const url = URL.createObjectURL(blob);
+			const anchor = document.createElement("a");
+			anchor.href = url;
+			anchor.download = `${deck.title ?? "deck"}.${format}`;
+			document.body.append(anchor);
+			anchor.click();
+			anchor.remove();
+			URL.revokeObjectURL(url);
+			toast.success(
+				format === "pptx" ? "Exported as PowerPoint." : "Exported as PDF.",
+			);
+		} catch (error) {
+			toast.error(
+				error instanceof Error ? error.message : "Export failed.",
+			);
+		} finally {
+			setIsExporting(false);
+		}
+	}
 
 	const { selected, count } = useEmblaSelection(api, () => setEditingId(null));
 	const slides = deck.slides;
@@ -42,6 +90,16 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 			api?.scrollTo(index);
 		},
 		[api],
+	);
+
+	const handleStartEdit = React.useCallback(
+		(slideId: string) => {
+			if (slides[selected]?.id !== slideId) {
+				goTo(slides.findIndex((slide) => slide.id === slideId));
+			}
+			setEditingId(slideId);
+		},
+		[slides, selected, goTo],
 	);
 
 	React.useEffect(() => {
@@ -81,18 +139,13 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 				const slide = slides[selected];
 				if (!slide) return;
 				event.preventDefault();
-				startEdit(slide.id);
+				handleStartEdit(slide.id);
 			}
 		}
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [selected, count, goTo, isFullscreen, editingId, slides, startEdit]);
-
-	function startEdit(slideId: string) {
-		if (slides[selected]?.id !== slideId) goTo(slides.findIndex((s) => s.id === slideId));
-		setEditingId(slideId);
-	}
+	}, [selected, count, goTo, isFullscreen, editingId, slides, handleStartEdit]);
 
 	function saveEdit(slideId: string, title: string, content: string) {
 		updateSlide.mutate(
@@ -119,26 +172,57 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 							<span className="font-mono text-xs text-muted-foreground">
 								{String(selected + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
 							</span>
-							<TooltipProvider>
-								<Tooltip>
-									<TooltipTrigger
+							<div className="flex items-center gap-2">
+								<DropdownMenu>
+									<DropdownMenuTrigger
 										render={
 											<Button
 												variant="outline"
 												size="sm"
 												className="rounded-full"
-												onClick={() => setIsFullscreen(true)}
+												disabled={isExporting}
 											/>
 										}
 									>
-										<Maximize2Icon aria-hidden />
-										Present
-									</TooltipTrigger>
-									<TooltipContent>
-										Press <Kbd>P</Kbd> to present
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
+										{isExporting ? (
+											<Loader2Icon className="animate-spin" aria-hidden />
+										) : (
+											<FileDownIcon aria-hidden />
+										)}
+										Export
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end">
+										<DropdownMenuItem onClick={() => exportDeck("pptx")}>
+											<PresentationIcon aria-hidden />
+											PowerPoint (.pptx)
+										</DropdownMenuItem>
+										<DropdownMenuItem onClick={() => exportDeck("pdf")}>
+											<FileTextIcon aria-hidden />
+											PDF (.pdf)
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger
+											render={
+												<Button
+													variant="outline"
+													size="sm"
+													className="rounded-full"
+													onClick={() => setIsFullscreen(true)}
+												/>
+											}
+										>
+											<Maximize2Icon aria-hidden />
+											Present
+										</TooltipTrigger>
+										<TooltipContent>
+											Press <Kbd>P</Kbd> to present
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							</div>
 						</div>
 
 						<div className="min-h-0 flex-1 overflow-y-auto">
@@ -154,9 +238,11 @@ export function DeckWorkspace({ deck }: { deck: DeckDetail }) {
 											<CarouselItem key={slide.id}>
 												<SlideView
 													slide={slide}
-													onEdit={
-														editingId === null ? () => startEdit(slide.id) : undefined
-													}
+												onEdit={
+													editingId === null
+														? () => handleStartEdit(slide.id)
+														: undefined
+												}
 												>
 													{editingId === slide.id ? (
 														<SlideEditor

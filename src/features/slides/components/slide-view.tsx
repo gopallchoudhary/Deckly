@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { PencilIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { parseBullets } from "@/lib/export/shared";
 import { Button } from "@/components/ui/button";
 import {
 	Tooltip,
@@ -21,13 +22,6 @@ export type SlideItem = {
 	imageUrl: string | null;
 };
 
-function toBullets(content: string): string[] {
-	return content
-		.split("\n")
-		.map((line) => line.trim().replace(/^•\s*/, ""))
-		.filter(Boolean);
-}
-
 export function SlideView({
 	slide,
 	onEdit,
@@ -39,7 +33,7 @@ export function SlideView({
 	children?: React.ReactNode;
 	className?: string;
 }) {
-	const bullets = toBullets(slide.content);
+	const bullets = parseBullets(slide.content);
 	const isEditing = React.Children.count(children) > 0;
 
 	return (
