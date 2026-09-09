@@ -13,6 +13,7 @@ import {
 	exportColors,
 	fetchSlideImage,
 	type ExportDeck,
+	type SlideImageFormat,
 } from "@/lib/export/shared";
 
 const PAGE_W = 1600;
@@ -89,11 +90,11 @@ const styles = StyleSheet.create({
 function SlidePage({
 	slide,
 	index,
-	imageData,
+	image,
 }: {
 	slide: ExportDeck["slides"][number];
 	index: number;
-	imageData: string | null;
+	image: { data: string; format: SlideImageFormat } | null;
 }) {
 	return (
 		<Page size={[PAGE_W, PAGE_H]} style={styles.page}>
@@ -109,10 +110,10 @@ function SlidePage({
 				</View>
 			</View>
 			<View style={styles.imagePanel}>
-				{imageData ? (
+				{image ? (
 					<PdfImage
 						style={styles.image}
-						src={{ uri: `data:image/png;base64,${imageData}` }}
+						src={{ uri: `data:image/${image.format};base64,${image.data}` }}
 					/>
 				) : (
 					<View style={styles.placeholder}>
@@ -152,7 +153,7 @@ export async function buildPdf(deck: ExportDeck): Promise<Buffer> {
 					key={index}
 					slide={slide}
 					index={index}
-					imageData={images[index]?.data ?? null}
+					image={images[index] ?? null}
 				/>
 			))}
 		</Document>

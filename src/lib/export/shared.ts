@@ -33,9 +33,25 @@ export function withImageTransform(url: string): string {
 	return `${url}?tr=w-1200,q-80`;
 }
 
+export type SlideImageFormat = "png" | "jpg";
+
+function sniffImageFormat(bytes: Uint8Array): SlideImageFormat {
+	// JPEG: FF D8 FF · PNG: 89 50 4E 47
+	if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpg";
+	if (
+		bytes[0] === 0x89 &&
+		bytes[1] === 0x50 &&
+		bytes[2] === 0x4e &&
+		bytes[3] === 0x47
+	) {
+		return "png";
+	}
+	return "jpg";
+}
+
 export async function fetchSlideImage(
 	url: string,
-): Promise<{ data: string; format: "png" } | null> {
+): Promise<{ data: string; format: SlideImageFormat } | null> {
 	try {
 		const response = await fetch(withImageTransform(url), {
 			signal: AbortSignal.timeout(EXPORT_IMAGE_TIMEOUT_MS),
@@ -43,7 +59,10 @@ export async function fetchSlideImage(
 		if (!response.ok) return null;
 
 		const buffer = Buffer.from(await response.arrayBuffer());
-		return { data: buffer.toString("base64"), format: "png" };
+		return {
+			data: buffer.toString("base64"),
+			format: sniffImageFormat(buffer),
+		};
 	} catch {
 		return null;
 	}

@@ -74,7 +74,7 @@ export async function buildPptx(deck: ExportDeck): Promise<Buffer> {
 
 		if (imageData) {
 			pptxSlide.addImage({
-				data: `image/png;base64,${imageData.data}`,
+				data: `image/${imageData.format};base64,${imageData.data}`,
 				x: PAGE_W - IMAGE_PANEL_W + GAP,
 				y: GAP,
 				w: IMAGE_PANEL_W - GAP * 2,
