@@ -176,6 +176,33 @@ export async function deleteDeck(deckId: string): Promise<void> {
 	await prisma.deck.delete({ where: { id: deckId } });
 }
 
+export async function updateSlide(
+	deckId: string,
+	slideId: string,
+	data: { title: string; content: string },
+): Promise<void> {
+	const user = await requireDbUser();
+	await requireOwnedDeck(deckId, user.id);
+
+	const title = data.title.trim();
+	const content = data.content.trim();
+	if (title.length === 0) throw new Error("Title cannot be empty.");
+	if (title.length > 120) throw new Error("Title must be at most 120 characters.");
+	if (content.length === 0) throw new Error("Content cannot be empty.");
+	if (content.length > 2000) throw new Error("Content must be at most 2000 characters.");
+
+	const slide = await prisma.slide.findUnique({
+		where: { id: slideId },
+		select: { deckId: true },
+	});
+	if (!slide || slide.deckId !== deckId) throw new Error("Slide not found.");
+
+	await prisma.slide.update({
+		where: { id: slideId },
+		data: { title, content },
+	});
+}
+
 export async function retryDeck(deckId: string): Promise<void> {
 	const user = await requireDbUser();
 	await requireOwnedDeck(deckId, user.id);

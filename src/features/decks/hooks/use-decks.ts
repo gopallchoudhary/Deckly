@@ -14,6 +14,7 @@ import {
 	listDecks,
 	renameDeck,
 	retryDeck,
+	updateSlide,
 	type DeckDetail,
 	type DeckSummary,
 } from "@/features/decks/actions";
@@ -120,6 +121,50 @@ export function useDeleteDeck() {
 		onSuccess: () => toast.success("Deck deleted."),
 		onSettled: () =>
 			queryClient.invalidateQueries({ queryKey: deckKeys.all }),
+	});
+}
+
+export function useUpdateSlide() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({
+			deckId,
+			slideId,
+			title,
+			content,
+		}: {
+			deckId: string;
+			slideId: string;
+			title: string;
+			content: string;
+		}) => updateSlide(deckId, slideId, { title, content }),
+		onMutate: async ({ deckId, slideId, title, content }) => {
+			await queryClient.cancelQueries({ queryKey: deckKeys.detail(deckId) });
+			const previous = queryClient.getQueryData<DeckDetail>(
+				deckKeys.detail(deckId),
+			);
+			queryClient.setQueryData<DeckDetail>(deckKeys.detail(deckId), (old) =>
+				old
+					? {
+							...old,
+							slides: old.slides.map((slide) =>
+								slide.id === slideId ? { ...slide, title, content } : slide,
+							),
+						}
+					: old,
+			);
+			return { previous };
+		},
+		onError: (error, { deckId }, context) => {
+			if (context?.previous) {
+				queryClient.setQueryData(deckKeys.detail(deckId), context.previous);
+			}
+			toast.error(toErrorMessage(error));
+		},
+		onSuccess: () => toast.success("Slide updated."),
+		onSettled: (_data, _error, { deckId }) =>
+			queryClient.invalidateQueries({ queryKey: deckKeys.detail(deckId) }),
 	});
 }
 

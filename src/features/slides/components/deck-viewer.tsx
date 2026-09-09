@@ -3,17 +3,9 @@
 import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-	Carousel,
-	CarouselContent,
-	CarouselItem,
-	CarouselNext,
-	CarouselPrevious,
-} from "@/components/ui/carousel";
 import { DeckStatusChip } from "@/features/decks/components/deck-status-chip";
 import { DeckStatusBanner } from "@/features/slides/components/deck-status-banner";
-import { SlideView } from "@/features/slides/components/slide-view";
-import { CarouselDots } from "@/features/slides/components/carousel-dots";
+import { DeckWorkspace } from "@/features/slides/components/deck-workspace";
 import { useDeck } from "@/features/decks/hooks/use-decks";
 import type { DeckDetail } from "@/features/decks/actions";
 
@@ -47,21 +39,7 @@ export function DeckViewer({ initial }: { initial: DeckDetail }) {
 			/>
 
 			{deck.status === "COMPLETE" && deck.slides.length > 0 && (
-				<Carousel
-					opts={{ loop: false, align: "start" }}
-					className="mx-auto w-full max-w-3xl"
-				>
-					<CarouselContent>
-						{deck.slides.map((slide) => (
-							<CarouselItem key={slide.id}>
-								<SlideView slide={slide} />
-							</CarouselItem>
-						))}
-					</CarouselContent>
-					<CarouselPrevious className="left-2 bg-background/80 backdrop-blur" />
-					<CarouselNext className="right-2 bg-background/80 backdrop-blur" />
-					<CarouselDots className="mt-4" />
-				</Carousel>
+				<DeckWorkspace deck={deck} />
 			)}
 
 			{deck.status === "COMPLETE" && deck.slides.length === 0 && (

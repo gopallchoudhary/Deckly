@@ -1,7 +1,10 @@
 "use client";
 
+import * as React from "react";
 import Image from "next/image";
+import { PencilIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type SlideItem = {
 	id: string;
@@ -18,11 +21,22 @@ function toBullets(content: string): string[] {
 		.filter(Boolean);
 }
 
-export function SlideView({ slide }: { slide: SlideItem }) {
+export function SlideView({
+	slide,
+	onEdit,
+	children,
+	className,
+}: {
+	slide: SlideItem;
+	onEdit?: () => void;
+	children?: React.ReactNode;
+	className?: string;
+}) {
 	const bullets = toBullets(slide.content);
+	const isEditing = React.Children.count(children) > 0;
 
 	return (
-		<div className="overflow-hidden rounded-lg border bg-card">
+		<div className={cn("overflow-hidden rounded-lg border bg-card", className)}>
 			<div className="relative aspect-video w-full bg-muted">
 				{slide.imageUrl ? (
 					<Image
@@ -42,21 +56,42 @@ export function SlideView({ slide }: { slide: SlideItem }) {
 				)}
 			</div>
 			<div className="p-6">
-				<h3 className="text-xl font-semibold tracking-tight">{slide.title}</h3>
-				<ul className="mt-3 space-y-2">
-					{bullets.map((bullet, index) => (
-						<li
-							key={index}
-							className={cn("flex gap-2.5 text-sm leading-relaxed text-muted-foreground")}
-						>
-							<span
-								aria-hidden
-								className="mt-[7px] size-1.5 shrink-0 rounded-full bg-brand"
-							/>
-							{bullet}
-						</li>
-					))}
-				</ul>
+				{isEditing ? (
+					children
+				) : (
+					<div className="flex items-start justify-between gap-3">
+						<div className="min-w-0">
+							<h3 className="text-xl font-semibold tracking-tight">
+								{slide.title}
+							</h3>
+							<ul className="mt-3 space-y-2">
+								{bullets.map((bullet, index) => (
+									<li
+										key={index}
+										className="flex gap-2.5 text-sm leading-relaxed text-muted-foreground"
+									>
+										<span
+											aria-hidden
+											className="mt-[7px] size-1.5 shrink-0 rounded-full bg-brand"
+										/>
+										{bullet}
+									</li>
+								))}
+							</ul>
+						</div>
+						{onEdit && (
+							<Button
+								variant="ghost"
+								size="icon-sm"
+								onClick={onEdit}
+								aria-label="Edit slide"
+								className="shrink-0 rounded-full"
+							>
+								<PencilIcon aria-hidden />
+							</Button>
+						)}
+					</div>
+				)}
 			</div>
 		</div>
 	);
